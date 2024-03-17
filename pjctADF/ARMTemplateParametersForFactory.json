@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "pjctADF"
+		},
+		"AzureSqlDatabase1_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=gkcdrs.database.windows.net;Initial Catalog=gkcdrs;User ID=gkcdrs_admin"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://airlineadlsgen2.dfs.core.windows.net/"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_tenant": {
+			"value": "bfde2954-db11-4a27-a6e6-c74cff05b265"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_servicePrincipalId": {
+			"value": "5cacf149-1f1e-4b7c-94de-2ac82087d821"
+		},
+		"AzureDataLakeStorage_Sink_properties_typeProperties_url": {
+			"value": "https://datalakedevsink.dfs.core.windows.net/"
+		},
+		"AzureDataLakeStorage_Sink_properties_typeProperties_tenant": {
+			"value": "bfde2954-db11-4a27-a6e6-c74cff05b265"
+		},
+		"AzureDataLakeStorage_Sink_properties_typeProperties_servicePrincipalId": {
+			"value": "5cacf149-1f1e-4b7c-94de-2ac82087d821"
+		},
+		"AzureKeyVault1_properties_typeProperties_baseUrl": {
+			"value": "https://sarankeyvault.vault.azure.net/"
+		}
+	}
+}
