@@ -1,0 +1,9 @@
+{
+	"name": "VarshikaADF",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "d3fae5b5-0dca-4afd-b03d-3c65b13e011a",
+		"tenantId": "f2dafcb4-fee8-4f4e-a28b-f0780166fdcd"
+	}
+}

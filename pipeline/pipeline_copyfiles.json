@@ -1,0 +1,239 @@
+{
+	"name": "pipeline_copyfiles",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_Source_Read_Json",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "Json_source",
+						"type": "DatasetReference",
+						"parameters": {
+							"parameterfile": "Table_Source_Datalake.json"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach_read_individualValues",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lookup_Source_Read_Json",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lookup_Source_Read_Json').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "If Condition1",
+							"type": "IfCondition",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"expression": {
+									"value": "@equals(split(item().File_name_source,'.')[1],'csv')",
+									"type": "Expression"
+								},
+								"ifFalseActivities": [
+									{
+										"name": "Copy data_zipfiles",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "BinarySource",
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true
+												},
+												"formatSettings": {
+													"type": "BinaryReadSettings",
+													"compressionProperties": {
+														"type": "ZipDeflateReadSettings",
+														"preserveZipFileNameAsFolder": false
+													}
+												}
+											},
+											"sink": {
+												"type": "BinarySink",
+												"storeSettings": {
+													"type": "AzureBlobFSWriteSettings"
+												}
+											},
+											"enableStaging": false
+										},
+										"inputs": [
+											{
+												"referenceName": "Binary_Source",
+												"type": "DatasetReference",
+												"parameters": {
+													"container": {
+														"value": "@item().container_source",
+														"type": "Expression"
+													},
+													"filename": {
+														"value": "@item().File_name_source",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "Binary_Sink",
+												"type": "DatasetReference",
+												"parameters": {
+													"container": {
+														"value": "@item().container_sink",
+														"type": "Expression"
+													},
+													"directory": {
+														"value": "@concat(item().directory_sink,'/date_part=',formatDateTime(utcnow(),'yyyy-MM-dd'))",
+														"type": "Expression"
+													},
+													"filename": {
+														"value": "@item().File_name_sink",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									}
+								],
+								"ifTrueActivities": [
+									{
+										"name": "Copy data_Src_to_Tgt",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "DelimitedTextSource",
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true,
+													"enablePartitionDiscovery": false
+												},
+												"formatSettings": {
+													"type": "DelimitedTextReadSettings"
+												}
+											},
+											"sink": {
+												"type": "DelimitedTextSink",
+												"storeSettings": {
+													"type": "AzureBlobFSWriteSettings"
+												},
+												"formatSettings": {
+													"type": "DelimitedTextWriteSettings",
+													"quoteAllText": true,
+													"fileExtension": ".txt"
+												}
+											},
+											"enableStaging": false,
+											"translator": {
+												"type": "TabularTranslator",
+												"typeConversion": true,
+												"typeConversionSettings": {
+													"allowDataTruncation": true,
+													"treatBooleanAsNumber": false
+												}
+											}
+										},
+										"inputs": [
+											{
+												"referenceName": "DelimitedText_Src",
+												"type": "DatasetReference",
+												"parameters": {
+													"Container": {
+														"value": "@item().container_source",
+														"type": "Expression"
+													},
+													"Directory": {
+														"value": "@item().directory_source",
+														"type": "Expression"
+													},
+													"FileName": {
+														"value": "@item().File_name_source",
+														"type": "Expression"
+													}
+												}
+											}
+										],
+										"outputs": [
+											{
+												"referenceName": "DelimitedText_sink",
+												"type": "DatasetReference",
+												"parameters": {
+													"container": {
+														"value": "@item().container_sink",
+														"type": "Expression"
+													},
+													"directory": {
+														"value": "@concat(split(item().File_name_sink,'.')[0],'/Date_part=',formatDateTime(utcnow(),'yyyy-MM-dd'))",
+														"type": "Expression"
+													},
+													"filename": {
+														"value": "@item().File_name_sink",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2024-03-25T10:07:36Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
